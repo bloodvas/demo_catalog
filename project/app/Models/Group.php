@@ -32,21 +32,23 @@ class Group extends Model
         return $this->belongsTo(Group::class, 'id_parent');
     }
 
-    private function getAllSubGroupIds() : array
+    public function getAllSubGroupIds() : array
     {
-        return DB::table('groups')
-        ->selectRow("
-            with recursive subgroups as (
-                select id from groups where id = ?
-                union all
-                select g.id from groups as g
-                inner join subgroups as s on g.id_parent = s.id
-            )
+        $query = "
+        with recursive subgroups as (
+            select id from groups where id = ?
+            union all
+            select g.id from groups as g
+            inner join subgroups as s on g.id_parent = s.id
+        )
+        select id from subgroups
+    ";
 
-            select id from subgroups
-        ", [$this->id])
-        ->pluck('id')
-        ->toArray();
+        // DB::select() — выполняет сырой SQL и возвращает массив объектов
+        $results = DB::select($query, [$this->id]);
+
+        // Преобразуем массив объектов [{id: 1}, {id: 2}] в простой массив [1, 2]
+        return array_map(fn($r) => $r->id, $results);
     }
 
     public function getAllProductsCount() : int

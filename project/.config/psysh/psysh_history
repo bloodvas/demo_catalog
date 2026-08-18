@@ -1,0 +1,5 @@
+App\Models\Group::count();
+App\Models\Group::where('id_parent', 0)->count();
+App\Models\Products::count();
+App\Models\Product::count();
+App\Models\Price::count();
