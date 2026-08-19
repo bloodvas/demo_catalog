@@ -20,6 +20,6 @@ class AppServiceProvider extends ServiceProvider
         ]);
 
         // Указываем layout для всех страниц
-        Inertia::setRootView('inertia-layout');
+        Inertia::setRootView('app');
     }
 }

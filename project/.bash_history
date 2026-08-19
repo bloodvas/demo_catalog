@@ -27,3 +27,5 @@ php artisan
 php artisan make:request ProductFilter
 php artisan make:trait HasFilter
 exit
+php artisan make:service CatalogService
+exit

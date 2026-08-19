@@ -8,23 +8,32 @@ use App\Models\Group;
 class ProductFilter extends Filter
 {
     /**
-     * Фильтрация по названию
+     * Фильтр по названию товара (LIKE)
+     *
+     * @param string $value
+     * @return Builder
      */
     protected function name(string $value): Builder
     {
-        return $this->builder->where('name', 'like', '%' . $value . '%');
+        return $this->builder->where('products.name', 'like', '%' . $value . '%');
     }
 
     /**
-     * Фильтрация по ID группы
+     * Фильтр по ID группы (включая все подгруппы)
+     *
+     * @param int $value
+     * @return Builder
      */
     protected function group_id(int $value): Builder
     {
-        return $this->builder->whereIn('id_group', Group::getAllSubGroupIdsRecursive($value));
+        return $this->builder->whereIn('products.id_group', Group::getAllSubGroupIdsRecursive($value));
     }
 
     /**
-     * Фильтрация по цене (диапазон)
+     * Фильтр по цене (min/max)
+     *
+     * @param array $value ['min' => float, 'max' => float]
+     * @return Builder
      */
     protected function price(array $value): Builder
     {
@@ -32,32 +41,36 @@ class ProductFilter extends Filter
         $max = $value['max'] ?? null;
 
         if ($min !== null && $max !== null) {
-            return $this->builder->whereBetween('price.price', [(float)$min, (float)$max]);
+            return $this->builder->whereBetween('prices.price', [(float)$min, (float)$max]);
         }
 
         if ($min !== null) {
-            return $this->builder->where('price.price', '>=', (float)$min);
+            return $this->builder->where('prices.price', '>=', (float)$min);
         }
 
         if ($max !== null) {
-            return $this->builder->where('price.price', '<=', (float)$max);
+            return $this->builder->where('prices.price', '<=', (float)$max);
         }
 
         return $this->builder;
     }
-
     /**
-     * Сортировка: сортировка передается через запрос
-     * В нашем случае сортировка обрабатывается в контроллере,
-     * но можно добавить и сюда
+     * Сортировка order(asc/desc) по sort полям (name/price/created_at)
+     *
+     * @param array $value ['name' => 'asc']
+     * @return Builder
      */
-    protected function sort(string $value): Builder
+    protected function sort(array $value): Builder
     {
-        return $this->builder;
-    }
+        $field = $value['field'] ?? 'price';
+        $direction = $value['direction'] ?? 'desc';
 
-    protected function order(string $value): Builder
-    {
-        return $this->builder;
+        $orderBy = match ($field) {
+            'name' => "LOWER(products.name) {$direction}",
+            'price' => "COALESCE(prices.price, 0) {$direction}",
+            default => "products.created_at {$direction}",
+        };
+
+        return $this->builder->orderByRaw($orderBy);
     }
 }

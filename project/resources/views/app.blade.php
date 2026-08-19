@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    @vite('resources/js/app.js')  <!-- Подключаем Vue bundle -->
+    <title>@yield('title', 'Каталог')</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @inertiaHead
 </head>
-<body>
-    <div id="app">
-        @inertia  <!-- Inertia вставит компонент здесь -->
-    </div>
+<body class="bg-light">
+    @inertia
 </body>
 </html>

@@ -11,13 +11,24 @@ class ProductFilterRequest extends FormRequest
         return true;
     }
 
+    protected function passedValidation(): void
+    {
+        $this->merge([
+            'page' => $this->input('page', 1),
+            'per_page' => $this->input('per_page', 12),
+            'sort.field'  => $this->input('sort.field', 'price'),
+            'sort.direction' => $this->input('sort.direction', 'desc'),
+        ]);
+    }
+
     public function rules(): array
     {
         return [
             'page'      => 'nullable|integer|min:1',
             'per_page'  => 'nullable|integer|min:1|max:50',
-            'sort'      => 'nullable|in:price,name,created_at',
-            'order'     => 'nullable|in:asc,desc',
+            'sort'      => 'nullable|array',          // <-- теперь массив
+            'sort.field'    => 'nullable|in:price,name,created_at',
+            'sort.direction' => 'nullable|in:asc,desc',
             'name'      => 'nullable|string|max:255',
             'group_id'  => 'nullable|integer|exists:groups,id',
             'price'     => 'nullable|array',
