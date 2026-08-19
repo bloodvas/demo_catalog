@@ -17,41 +17,45 @@ class Group extends Model
         'name',
     ];
 
-    public function products() : HasMany
+    public function products(): HasMany
     {
         return $this->hasMany(Product::class, 'id_group');
     }
 
-    public function children() : HasMany
+    public function children(): HasMany
     {
         return $this->hasMany(Group::class, 'id_parent');
     }
 
-    public function parent() : BelongsTo
+    public function parent(): BelongsTo
     {
         return $this->belongsTo(Group::class, 'id_parent');
     }
 
-    public function getAllSubGroupIds() : array
+    /**
+     * Получить все подгруппы (рекурсивно) через CTE
+     */
+    public function getAllSubGroupIds(): array
     {
         $query = "
-        with recursive subgroups as (
-            select id from groups where id = ?
-            union all
-            select g.id from groups as g
-            inner join subgroups as s on g.id_parent = s.id
-        )
-        select id from subgroups
-    ";
+            WITH RECURSIVE subgroups AS (
+                SELECT id FROM groups WHERE id = ?
+                UNION ALL
+                SELECT g.id FROM groups g
+                INNER JOIN subgroups s ON g.id_parent = s.id
+            )
+            SELECT id FROM subgroups
+        ";
 
-        // DB::select() — выполняет сырой SQL и возвращает массив объектов
         $results = DB::select($query, [$this->id]);
 
-        // Преобразуем массив объектов [{id: 1}, {id: 2}] в простой массив [1, 2]
         return array_map(fn($r) => $r->id, $results);
     }
 
-    public function getAllProductsCount() : int
+    /**
+     * Посчитать количество товаров во всех подгруппах
+     */
+    public function getAllProductsCount(): int
     {
         $subGroupIds = $this->getAllSubGroupIds();
 
@@ -62,5 +66,61 @@ class Group extends Model
         return DB::table('products')
             ->whereIn('id_group', $subGroupIds)
             ->count();
+    }
+
+    /**
+     * Получить все подгруппы для указанной группы (статический метод)
+     */
+    public static function getAllSubGroupIdsRecursive(int $groupId): array
+    {
+        $query = "
+            WITH RECURSIVE subgroups AS (
+                SELECT id FROM groups WHERE id = ?
+                UNION ALL
+                SELECT g.id FROM groups g
+                INNER JOIN subgroups s ON g.id_parent = s.id
+            )
+            SELECT id FROM subgroups
+        ";
+
+        $results = DB::select($query, [$groupId]);
+
+        return array_map(fn($r) => $r->id, $results);
+    }
+
+    /**
+     * Рекурсивно строит полное дерево групп без ограничений глубины
+     * Использует loadMissing для ленивой загрузки children
+     */
+    public function buildFullTree(): array
+    {
+        // Загружаем children только если ещё не загружены
+        $this->loadMissing('children');
+
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'product_count' => $this->getAllProductsCount(),
+            'children' => $this->children->map(fn($child) => $child->buildFullTree())->toArray(),
+        ];
+    }
+
+    /**
+     * Получить полный breadcrumb путь от корня до текущей группы
+     */
+    public function getBreadcrumbPath(): array
+    {
+        $breadcrumbs = [];
+        $current = $this;
+
+        while ($current) {
+            array_unshift($breadcrumbs, [
+                'id' => $current->id,
+                'name' => $current->name,
+            ]);
+            $current = $current->parent;
+        }
+
+        return $breadcrumbs;
     }
 }

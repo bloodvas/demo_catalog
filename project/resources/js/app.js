@@ -1,5 +1,8 @@
-import { createApp, h, render } from "vue";
+import { createApp, h } from "vue";
 import { createInertiaApp } from "@inertiajs/vue3";
+
+// Импортируем стили
+import '../css/app.css';
 
 // Создаём Inertia-приложение (SPA-обёртка)
 createInertiaApp({

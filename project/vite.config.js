@@ -23,15 +23,14 @@ export default defineConfig({
         },
     },
     server: {
-        host: "0.0.0.0",
+        host: "localhost",
         port: 5173,
         strictPort: true,
-
+        cors: true,
         hmr: {
             host: "localhost",
-            port: 5173,
+            protocol: "ws",
         },
-
         proxy: {
             "/api": {
                 target: "http://web:80",
