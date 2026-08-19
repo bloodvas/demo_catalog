@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Filters\ProductFilter;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -28,5 +30,13 @@ class Product extends Model
     public function group() : BelongsTo
     {
         return $this->belongsTo(Group::class, 'id_group');
+    }
+
+    /**
+     * Scope для применения фильтров
+     */
+    public function scopeFilter(Builder $builder, ProductFilter $filter): Builder
+    {
+        return $filter->apply($builder);
     }
 }
