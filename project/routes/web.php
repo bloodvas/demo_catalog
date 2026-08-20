@@ -15,6 +15,3 @@ Route::get('/product/{id}', function ($id) {
 Route::get('/group/{id}', function ($id) {
     return Inertia::render('Catalog');
 })->where('id', '[0-9]+');
-
-
-Route::get('/product/{id}', [CatalogController::class, 'show']);

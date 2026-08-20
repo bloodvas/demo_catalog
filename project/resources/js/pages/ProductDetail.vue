@@ -11,52 +11,79 @@
             />
         </template>
 
-        <!-- Хлебные крошки -->
-        <Breadcrumbs
-            v-if="breadcrumbs.length > 0"
-            :breadcrumbs="breadcrumbs"
-            @click="handleBreadcrumbClick"
-        />
-
-        <!-- Карточка товара -->
-        <div v-if="loading" class="text-center py-5">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Загрузка...</span>
-            </div>
-            <p class="mt-3 text-muted">Загрузка товара...</p>
-        </div>
-
-        <div v-else-if="product" class="bg-white rounded-3 shadow-sm p-4">
-            <div class="row">
-                <div class="col-12">
-                    <h2 class="h3 fw-bold mb-3">{{ product.name }}</h2>
-                    <p class="text-muted mb-4">
-                        <i class="bi bi-folder me-1"></i>
-                        <template v-for="(crumb, index) in breadcrumbs" :key="crumb.id">
-                            <a
-                                v-if="crumb.type === 'group'"
-                                href="#"
-                                @click.prevent="handleBreadcrumbClick(crumb)"
-                            >{{ crumb.name }}</a>
-                            <span v-else-if="index > 0"> / </span>
-                            <span v-else class="text-muted">{{ crumb.name }}</span>
-                        </template>
-                    </p>
-                    <div class="d-flex align-items-center gap-3 mb-4">
-                        <span class="text-primary fs-2 fw-bold">
-                            {{ formatPrice(product.price) }} ₽
-                        </span>
-                    </div>
-                    <button class="btn btn-outline-secondary btn-lg" @click="goBack">
-                        <i class="bi bi-arrow-left me-2"></i>Назад к списку
-                    </button>
+        <div class="product-detail">
+            <div v-if="loading" class="product-detail__loading">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Загрузка...</span>
                 </div>
+                <p class="mt-3 text-muted">Загрузка товара...</p>
             </div>
-        </div>
 
-        <div v-else class="text-center py-5">
-            <i class="bi bi-exclamation-triangle fs-1 text-warning mb-3 d-block"></i>
-            <h5 class="text-muted">Товар не найден</h5>
+            <template v-else-if="product">
+                <!-- Хлебные крошки -->
+                <div class="product-detail__breadcrumbs">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a href="/" class="text-decoration-none">
+                                    <i class="bi bi-house-door me-1"></i>Главная
+                                </a>
+                            </li>
+                            <li
+                                v-for="crumb in breadcrumbs"
+                                :key="crumb.id"
+                                class="breadcrumb-item"
+                            >
+                                <a
+                                    v-if="crumb.type === 'group'"
+                                    href="#"
+                                    @click.prevent="handleBreadcrumbClick(crumb)"
+                                    class="text-decoration-none"
+                                >{{ crumb.name }}</a>
+                                <span
+                                    v-else
+                                    class="text-primary fw-semibold"
+                                >{{ crumb.name }}</span>
+                            </li>
+                        </ol>
+                    </nav>
+                </div>
+
+                <!-- Карточка товара -->
+                <div class="product-detail__card">
+                    <div class="product-detail__header">
+                        <div class="product-detail__icon-wrapper">
+                            <i class="bi bi-box-seam-fill"></i>
+                        </div>
+                        <h1 class="product-detail__title">{{ product.name }}</h1>
+                    </div>
+
+                    <div class="product-detail__divider"></div>
+
+                    <div class="product-detail__price-block">
+                        <span class="product-detail__price-label">Цена</span>
+                        <div class="product-detail__price-value">
+                            {{ formatPrice(product.price) }}
+                            <span class="product-detail__price-currency">₽</span>
+                        </div>
+                    </div>
+
+                    <div class="product-detail__actions">
+                        <button class="btn btn-primary btn-lg" @click="goBack">
+                            <i class="bi bi-arrow-left me-2"></i>Назад к каталогу
+                        </button>
+                    </div>
+                </div>
+            </template>
+
+            <div v-else class="product-detail__notfound">
+                <i class="bi bi-exclamation-triangle-fill text-warning mb-3 d-block" style="font-size: 3rem;"></i>
+                <h5 class="text-muted mb-1">Товар не найден</h5>
+                <p class="text-muted small mb-4">Возможно, он был удалён или jamais существовал</p>
+                <button class="btn btn-primary" @click="goBack">
+                    <i class="bi bi-arrow-left me-1"></i>Вернуться в каталог
+                </button>
+            </div>
         </div>
     </AppLayout>
 </template>
