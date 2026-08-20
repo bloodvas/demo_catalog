@@ -24,7 +24,7 @@ class ProductFilter extends Filter
      * @param int $value
      * @return Builder
      */
-    protected function group_id(int $value): Builder
+    protected function groupId(int $value): Builder
     {
         return $this->builder->whereIn('products.id_group', Group::getAllSubGroupIdsRecursive($value));
     }
