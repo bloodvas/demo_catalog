@@ -131,7 +131,7 @@ async function fetchGroups() {
 function selectGroup(group) {
     selectedGroupId.value = group.id;
     selectedGroup.value = group;
-    router.push('/');
+    router.get('/', { selectedGroupId: group.id }, { preserveState: true });
 }
 
 function handleBreadcrumbClick(item) {
@@ -139,7 +139,7 @@ function handleBreadcrumbClick(item) {
 }
 
 function goBack() {
-    router.push('/');
+    router.get('/', {}, { preserveState: true });
 }
 
 // --- Форматирование ---

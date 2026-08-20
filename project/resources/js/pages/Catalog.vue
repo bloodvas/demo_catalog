@@ -343,9 +343,21 @@ function formatPrice(price) {
     });
 }
 
-// ---生命周期 ---
 onMounted(async () => {
     await fetchGroups();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const selectedGroupIdParam = urlParams.get("selectedGroupId");
+    if (selectedGroupIdParam) {
+        selectedGroupId.value = parseInt(selectedGroupIdParam);
+        const groupObj = groups.value.find(
+            (g) => g.id === selectedGroupId.value,
+        );
+        if (groupObj) {
+            selectedGroup.value = groupObj;
+        }
+    }
+
     await fetchProducts();
 });
 </script>
